@@ -9,13 +9,13 @@ EL_FILES  ?= $(shell git ls-files|egrep '\.el$$')
 
 ################################################################################
 EMACS = emacs
-EMACS_FLAGS = -q --no-site-file --batch
+EMACS_FLAGS =  --batch -Q
 EMACS_FLAGS += --eval "(add-to-list 'load-path \"lisp\")"
 EMACS_FLAGS += -f package-initialize
 EMACS_FLAGS += -f batch-byte-compile
 
 ################################################################################
-.PHONEY: all clean compile
+.PHONEY: all clean test compile
 
 ################################################################################
 all: $(TARBALL)
@@ -25,12 +25,18 @@ compile: $(EL_FILES:.el=.elc)
 
 ################################################################################
 clean:
-	rm -rf $(TARBALL) $(PACKAGE)
+	rm -rf $(TARBALL) $(PACKAGE) $(PACKAGE).elpa
 	rm -f $(EL_FILES:.el=.elc)
 
 ################################################################################
+test: $(TARBALL)
+	$(EMACS) --batch -Q -l $(ELPKG)/pkgtest.el \
+	  --eval '(elpkg-test-package "$(CURDIR)/$(TARBALL)")'
+
+################################################################################
 $(PACKAGE): $(PKG_FILES)
-	mkdir $@
+	rm -rf $@
+	mkdir -p $@
 	cp $(PKG_FILES) $@
 	$(ELPKG)/defpkg.sh $(NAME) $@/$(notdir $(CORE_FILE)) > $@/$(NAME)-pkg.el
 
