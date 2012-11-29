@@ -17,4 +17,5 @@ markdown then append it to FILE."
             fdoc-replacements)
     (with-temp-buffer
       (insert doc)
+      (insert "\n")
       (append-to-file (point-min) (point-max) file))))
